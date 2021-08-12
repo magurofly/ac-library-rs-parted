@@ -64,11 +64,12 @@ mod modint {
         hash::{Hash, Hasher},
         iter::{Product, Sum},
         marker::PhantomData,
-        ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+        ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign, Rem},
         str::FromStr,
         sync::atomic::{self, AtomicU32, AtomicU64},
         thread::LocalKey,
     };
+    use num_traits::{Zero, One, Num};
 
     pub type ModInt1000000007 = StaticModInt<Mod1000000007>;
     pub type ModInt998244353 = StaticModInt<Mod998244353>;
@@ -1055,6 +1056,50 @@ mod modint {
         impl<I: Id     > Sum<_>     for DynamicModInt<I> { fn sum(_)     -> _ { _(Self::raw(0), Add::add) } }
         impl<I: Id     > Product<_> for DynamicModInt<I> { fn product(_) -> _ { _(Self::raw(1), Mul::mul) } }
     }
+
+    // impl Num
+
+    impl<M: Modulus> Zero for StaticModInt<M> {
+        fn zero() -> Self {
+            Self::from(0)
+        }
+
+        fn is_zero(&self) -> bool {
+            self.val().is_zero()
+        }
+    }
+
+    impl<M: Modulus> One for StaticModInt<M> {
+        fn one() -> Self {
+            Self::from(1)
+        }
+
+        fn is_one(&self) -> bool {
+            self.val().is_one()
+        }
+    }
+
+    impl<M: Modulus> Rem for StaticModInt<M> {
+        type Output = Self;
+        fn rem(self, _: Self) -> Self {
+            self
+        }
+    }
+
+    impl<M: Modulus> Num for StaticModInt<M> {
+        type FromStrRadixErr = <u32 as Num>::FromStrRadixErr;
+
+        fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
+            Ok(Self::from(u32::from_str_radix(str, radix)?))
+        }
+    }
+
+    // impl<I: Id> Rem for DynamicModInt<I> {
+    //     type Output = Self;
+    //     fn rem(self, _: Self) -> Self {
+    //         self
+    //     }
+    // }
 
     #[cfg(test)]
     mod tests {
